@@ -10,14 +10,16 @@ import (
 )
 
 type EmailData struct {
-	contactEmail string
-	message      string
-	name         string
+	ContactEmail   string `json:"correo"`
+	Message        string `json:"mensaje"`
+	Name           string `json:"nombre"`
+	RecaptchaToken string `json:"recaptchaToken"`
 }
 
 func SendEmail(ctx context.Context, data EmailData) error {
 	sendgridAPIKey := ctx.Value(ContextKey("SendGrid")).(string)
 	template := ctx.Value(ContextKey("TemplateContacto")).(string)
+	mode := ctx.Value(ContextKey("Mode")).(string)
 
 	m := mail.NewV3Mail()
 	content := mail.NewContent("text/html", template)
@@ -29,17 +31,24 @@ func SendEmail(ctx context.Context, data EmailData) error {
 
 	personalization := mail.NewPersonalization()
 
-	tos := []*mail.Email{
-		mail.NewEmail("Angel", "angelmtzdiaz@gmail.com"),
-		// mail.NewEmail("rpereza", "rpereza@unam.mx"),
-		// mail.NewEmail("rpereza", "rpereza@unam.mx"),
+	var tos []*mail.Email
+
+	if mode == "DEV" {
+		tos = []*mail.Email{
+			mail.NewEmail("Angel", "angelmtzdiaz@gmail.com"),
+		}
+	} else {
+		tos = []*mail.Email{
+			mail.NewEmail("rpereza", "rpereza@unam.mx"),
+			mail.NewEmail("evelazquez", "evelazquez@gponutec.com"),
+		}
 	}
 
 	personalization.AddTos(tos...)
 
-	personalization.SetSubstitution("%nombre%", data.name)
-	personalization.SetSubstitution("%correo%", data.contactEmail)
-	personalization.SetSubstitution("%mensaje%", data.message)
+	personalization.SetSubstitution("%nombre%", data.Name)
+	personalization.SetSubstitution("%correo%", data.ContactEmail)
+	personalization.SetSubstitution("%mensaje%", data.Message)
 
 	personalization.Subject = "Solicitud de Contacto"
 
