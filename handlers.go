@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
 func MakeSendEmailHandler(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/send-email" {
-			http.Error(w, "404 not found", http.StatusNotFound)
+		valid := ValidateHost(r.Host)
 
-			return
+		if !valid {
+			http.Error(w, "unauthorized host", http.StatusUnauthorized)
 		}
 
 		if r.Method != "POST" {
@@ -20,13 +21,25 @@ func MakeSendEmailHandler(ctx context.Context) http.HandlerFunc {
 			return
 		}
 
-		data := EmailData{
-			contactEmail: "test@test.com",
-			message:      "Test",
-			name:         "Angel",
+		var data EmailData
+
+		err := json.NewDecoder(r.Body).Decode(&data)
+
+		defer r.Body.Close()
+
+		if err != nil {
+			w.WriteHeader(400)
+			fmt.Fprintf(w, "Decode error")
+			return
 		}
 
-		err := SendEmail(ctx, data)
+		valid = ValidateRecaptchaToken(ctx, data.RecaptchaToken)
+
+		if !valid {
+			http.Error(w, "recaptcha fail", http.StatusBadRequest)
+		}
+
+		err = SendEmail(ctx, data)
 
 		if err != nil {
 			fmt.Printf("\n%v\n", err)
