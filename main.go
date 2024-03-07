@@ -18,6 +18,8 @@ func main() {
 
 	ctx := context.Background()
 	ctxVal := context.WithValue(ctx, ContextKey("SendGrid"), os.Getenv("SENDGRID_API_KEY"))
+	ctxVal = context.WithValue(ctxVal, ContextKey("Recaptcha"), os.Getenv("CAPTCHA_SECRET_KEY"))
+	ctxVal = context.WithValue(ctxVal, ContextKey("Mode"), os.Getenv("MODE"))
 
 	t, err := ReadTemplateStr("contact-template.html")
 
@@ -26,11 +28,20 @@ func main() {
 		return
 	}
 
-	ctxVal2 := context.WithValue(ctxVal, ContextKey("TemplateContacto"), t)
+	ctxVal = context.WithValue(ctxVal, ContextKey("TemplateContacto"), t)
 
-	http.HandleFunc("/send-email", MakeSendEmailHandler(ctxVal2))
+	// mux := http.NewServeMux()
 
-	fmt.Printf("starting server at port 5005")
+	http.HandleFunc("/send-email", MakeSendEmailHandler(ctxVal))
+	// corsHandler, err := SetupCors(mux)
+
+	if err != nil {
+		log.Fatal(err)
+
+	}
+
+	fmt.Printf("starting server at port 5005\n")
+
 	if err := http.ListenAndServe(":5005", nil); err != nil {
 		log.Fatal(err)
 	}
