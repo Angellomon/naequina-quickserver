@@ -21,6 +21,8 @@ func main() {
 	ctxVal = context.WithValue(ctxVal, ContextKey("Recaptcha"), os.Getenv("CAPTCHA_SECRET_KEY"))
 	ctxVal = context.WithValue(ctxVal, ContextKey("Mode"), os.Getenv("MODE"))
 
+	fmt.Println("mode" + os.Getenv("MODE"))
+
 	t, err := ReadTemplateStr("contact-template.html")
 
 	if err != nil {
