@@ -37,6 +37,8 @@ func MakeSendEmailHandler(ctx context.Context) http.HandlerFunc {
 
 		if !valid {
 			http.Error(w, "recaptcha fail", http.StatusBadRequest)
+
+			return
 		}
 
 		err = SendEmail(ctx, data)
