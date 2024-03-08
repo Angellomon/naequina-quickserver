@@ -63,5 +63,5 @@ func ValidateRecaptchaToken(ctx context.Context, token string) bool {
 
 	fmt.Println(decoderErr)
 
-	return decoderErr != nil
+	return decoderErr == nil
 }
