@@ -54,3 +54,32 @@ func MakeSendEmailHandler(ctx context.Context) http.HandlerFunc {
 	}
 
 }
+
+type AvailableTicketsResponse struct {
+	AvailableTickets int `json:"availableTickets"`
+}
+
+func MakeEventTicketsAvailableHandler(ctx context.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" {
+			http.Error(w, "method not supported", http.StatusNotFound)
+
+			return
+		}
+
+		availableTickets, err := GetAvailableTickets(ctx)
+
+		if err != nil {
+			http.Error(w, "error making the request to eventbrite", http.StatusServiceUnavailable)
+
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		json.NewEncoder(w).Encode(AvailableTicketsResponse{
+			AvailableTickets: availableTickets,
+		})
+
+	}
+}

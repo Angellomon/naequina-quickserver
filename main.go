@@ -17,9 +17,11 @@ func main() {
 	}
 
 	ctx := context.Background()
-	ctxVal := context.WithValue(ctx, ContextKey("SendGrid"), os.Getenv("SENDGRID_API_KEY"))
-	ctxVal = context.WithValue(ctxVal, ContextKey("Recaptcha"), os.Getenv("CAPTCHA_SECRET_KEY"))
-	ctxVal = context.WithValue(ctxVal, ContextKey("Mode"), os.Getenv("MODE"))
+	ctx = context.WithValue(ctx, ContextKey("SendGrid"), os.Getenv("SENDGRID_API_KEY"))
+	ctx = context.WithValue(ctx, ContextKey("Recaptcha"), os.Getenv("CAPTCHA_SECRET_KEY"))
+	ctx = context.WithValue(ctx, ContextKey("Mode"), os.Getenv("MODE"))
+	ctx = context.WithValue(ctx, ContextKey("EventId"), os.Getenv("EVENTBRITE_EVENT_ID"))
+	ctx = context.WithValue(ctx, ContextKey("EventbritePrivateToken"), os.Getenv("EVENTBRITE_PRIVATE_TOKEN"))
 
 	fmt.Println("mode" + os.Getenv("MODE"))
 
@@ -30,17 +32,14 @@ func main() {
 		return
 	}
 
-	ctxVal = context.WithValue(ctxVal, ContextKey("TemplateContacto"), t)
+	ctx = context.WithValue(ctx, ContextKey("TemplateContacto"), t)
 
 	// mux := http.NewServeMux()
 
-	http.HandleFunc("/send-email", MakeSendEmailHandler(ctxVal))
+	http.HandleFunc("/send-email", MakeSendEmailHandler(ctx))
 	// corsHandler, err := SetupCors(mux)
 
-	if err != nil {
-		log.Fatal(err)
-
-	}
+	http.HandleFunc("/available-tickets", MakeEventTicketsAvailableHandler(ctx))
 
 	fmt.Printf("starting server at port 5005\n")
 
