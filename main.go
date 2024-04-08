@@ -22,6 +22,7 @@ func main() {
 	ctx = context.WithValue(ctx, ContextKey("Mode"), os.Getenv("MODE"))
 	ctx = context.WithValue(ctx, ContextKey("EventId"), os.Getenv("EVENTBRITE_EVENT_ID"))
 	ctx = context.WithValue(ctx, ContextKey("EventbritePrivateToken"), os.Getenv("EVENTBRITE_PRIVATE_TOKEN"))
+	ctx = context.WithValue(ctx, ContextKey("UmbrellaEventId"), os.Getenv("UMBRELLA_EVENT_ID"))
 
 	fmt.Println("mode" + os.Getenv("MODE"))
 
@@ -40,6 +41,8 @@ func main() {
 	// corsHandler, err := SetupCors(mux)
 
 	http.HandleFunc("/available-tickets", MakeEventTicketsAvailableHandler(ctx))
+
+	http.HandleFunc("/certificate-pdf", MakeGetCertificatePDFHandler(ctx))
 
 	fmt.Printf("starting server at port 5005\n")
 

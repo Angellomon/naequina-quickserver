@@ -24,11 +24,17 @@ type TicketResponseData struct {
 	Capacity      int           `json:"capacity"`
 }
 
+// type TicketResponseData struct {
+// 	QuantitySold  int `json:"quantity_sold"`
+// 	QuantityTotal int `json:"quantity_total"`
+// }
+
 func GetAvailableTickets(ctx context.Context) (int, error) {
 	eventId := ctx.Value(ContextKey("EventId")).(string)
 	eventbriteToken := ctx.Value(ContextKey("EventbritePrivateToken")).(string)
 
 	eventInfoUrl := fmt.Sprintf("https://www.eventbriteapi.com/v3/events/%v/?token=%v&expand=ticket_classes", eventId, eventbriteToken)
+	// eventInfoUrl := fmt.Sprintf("https://www.eventbriteapi.com/v3/events/%v/capacity_tier/?token=%v", eventId, eventbriteToken)
 
 	res, err := http.Get(eventInfoUrl)
 
@@ -47,9 +53,12 @@ func GetAvailableTickets(ctx context.Context) (int, error) {
 		return 0, &TicketError{msg: "Error decoding"}
 	}
 
-	if len(ticketResponse.TicketClasses) == 0 {
-		return 0, &TicketError{msg: "no data"}
-	}
+	// if len(ticketResponse.TicketClasses) == 0 {
+	// 	return 0, &TicketError{msg: "no data"}
+	// }
 
+	fmt.Println(ticketResponse)
 	return ticketResponse.Capacity - ticketResponse.TicketClasses[0].QuantitySold, nil
+
+	// return ticketResponse.QuantityTotal - ticketResponse.QuantitySold, nil
 }
