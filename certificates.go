@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	// "net/url"
 )
 
 type CertificatePDFError struct {
@@ -23,9 +24,11 @@ type CertificatePDFData struct {
 func GetCertificatePDF(ctx context.Context, email string, w io.Writer) error {
 	umbrellaEventId := ctx.Value(ContextKey("UmbrellaEventId")).(string)
 
-	umbrellaEventUrl := fmt.Sprintf("https://constancias.umbrellaservices.angellos.net/events/pdf/%v?correo=%v", umbrellaEventId, email)
+	umbrellaEventStr := fmt.Sprintf("https://constancias.umbrellaservices.angellos.net/pdf/%v?correo=%v", umbrellaEventId, email)
 
-	res, err := http.Get(umbrellaEventUrl)
+	// umbrellaEventUrl := url.QueryEscape(umbrellaEventStr)
+
+	res, err := http.Get(umbrellaEventStr)
 
 	if err != nil {
 		fmt.Println("Error making the request (certificate pdf)")
@@ -41,7 +44,10 @@ func GetCertificatePDF(ctx context.Context, email string, w io.Writer) error {
 		return &CertificatePDFError{Message: "Error reading the body"}
 	}
 
-	w.Write(b)
+	size, _ := w.Write(b)
+
+	fmt.Println("wrote", size, "bytes")
+	fmt.Println("content length", res.ContentLength)
 
 	return nil
 }
